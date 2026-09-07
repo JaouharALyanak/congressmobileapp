@@ -1,0 +1,209 @@
+workflows:
+
+  # ── Android — Google Play ──────────────────────────────────────────────────
+  android-release:
+    name: Android Release (AAB + APK)
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      groups:
+        - android_creds
+      vars:
+        CONFIG_FILE: configs/smr26.json
+
+    scripts:
+      - name: Set up keystore
+        script: |
+          echo $FCI_KEYSTORE | base64 --decode > android/upload-keystore.jks
+          cat >> android/key.properties << EOF
+          storePassword=$FCI_KEYSTORE_PASSWORD
+          keyPassword=$FCI_KEY_PASSWORD
+          keyAlias=$FCI_KEY_ALIAS
+          storeFile=../upload-keystore.jks
+          EOF
+
+      - name: Get Flutter packages
+        script: flutter pub get
+
+      - name: Build AAB
+        script: flutter build appbundle --release --dart-define-from-file=$CONFIG_FILE
+
+      - name: Build APK
+        script: flutter build apk --release --dart-define-from-file=$CONFIG_FILE
+
+    artifacts:
+      - build/app/outputs/bundle/release/*.aab
+      - build/app/outputs/flutter-apk/*.apk
+
+    # publishing:
+    #   google_play:
+    #     credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+    #     track: internal
+    #     submit_as_draft: true
+
+  # ── Android — Firebase App Distribution ───────────────────────────────────
+  android-firebase:
+    name: Android Firebase Distribution (APK)
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      groups:
+        - android_creds
+        - firebase_creds
+      vars:
+        CONFIG_FILE: configs/smr26.json
+        FIREBASE_APP_ID: 1:1017042246130:android:a1d13af7baf17a4475f36b
+
+    scripts:
+      - name: Set up keystore
+        script: |
+          echo $FCI_KEYSTORE | base64 --decode > android/upload-keystore.jks
+          keytool -importkeystore \
+            -srckeystore android/upload-keystore.jks \
+            -destkeystore android/upload-keystore.p12 \
+            -deststoretype PKCS12 \
+            -srcalias $FCI_KEY_ALIAS \
+            -deststorepass $FCI_KEYSTORE_PASSWORD \
+            -srcstorepass $FCI_KEYSTORE_PASSWORD \
+            -noprompt 2>/dev/null || true
+          KEYSTORE_FILE=$([ -f android/upload-keystore.p12 ] && echo "../upload-keystore.p12" || echo "../upload-keystore.jks")
+          cat >> android/key.properties << EOF
+          storePassword=$FCI_KEYSTORE_PASSWORD
+          keyPassword=$FCI_KEY_PASSWORD
+          keyAlias=$FCI_KEY_ALIAS
+          storeFile=$KEYSTORE_FILE
+          EOF
+
+      - name: Get Flutter packages
+        script: flutter pub get
+
+      - name: Build APK
+        script: flutter build apk --release --dart-define-from-file=$CONFIG_FILE
+
+      - name: Upload to Firebase App Distribution
+        script: |
+          firebase appdistribution:distribute \
+            build/app/outputs/flutter-apk/app-release.apk \
+            --app $FIREBASE_APP_ID \
+            --token $FIREBASE_TOKEN \
+            --release-notes "Build $(date +'%Y-%m-%d %H:%M')"
+
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
+
+  # ── iOS — App Store ────────────────────────────────────────────────────────
+  ios-release:
+    name: iOS Release (IPA) v1.0.1+6
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      groups:
+        - ios_creds
+      vars:
+        CONFIG_FILE: configs/smr26.json
+        BUNDLE_ID: com.hashtagsante.smr2026
+        APP_STORE_APPLE_ID: 6763072246
+
+    scripts:
+      - name: Set up keychain & certificates
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files $BUNDLE_ID \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+
+      - name: Set up code signing settings
+        script: xcode-project use-profiles
+
+      - name: Get Flutter packages
+        script: flutter pub get
+
+      - name: Install CocoaPods
+        script: find . -name "Podfile" -execdir pod install \;
+
+      - name: Build IPA
+        script: |
+          flutter build ipa --release \
+            --dart-define-from-file=$CONFIG_FILE \
+            --export-options-plist=$CM_EXPORT_OPTIONS_PATH
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: true
+        submit_to_app_store: false
+
+  # ── iOS — Simulator (Appetize) ─────────────────────────────────────────────
+  ios-simulator:
+    name: iOS Simulator Build (Appetize)
+    max_build_duration: 30
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      groups:
+        - appetize_creds   # variable : APPETIZE_API_TOKEN
+      vars:
+        CONFIG_FILE: configs/smr26.json
+
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+
+      - name: Install CocoaPods
+        script: find . -name "Podfile" -execdir pod install \;
+
+      - name: Build iOS Simulator
+        script: |
+          flutter build ios --simulator \
+            --dart-define-from-file=$CONFIG_FILE
+          BINARY="build/ios/iphonesimulator/Runner.app/Runner"
+          xcodebuild -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -sdk iphonesimulator \
+            -configuration Release \
+            ONLY_ACTIVE_ARCH=NO \
+            ARCHS="x86_64 arm64" \
+            VALID_ARCHS="x86_64 arm64" \
+            BUILD_DIR=build/ios_x86 \
+            -quiet
+          X86_BINARY=$(find build/ios_x86 -name Runner -not -path "*.dSYM/*" | head -1)
+          if [ -n "$X86_BINARY" ]; then
+            lipo -create "$BINARY" "$X86_BINARY" -output "$BINARY"
+            echo "Fat binary: $(lipo -info $BINARY)"
+          fi
+
+      - name: Zip Runner.app
+        script: |
+          cd build/ios/iphonesimulator
+          zip -r Runner.app.zip Runner.app
+
+      - name: Upload to Appetize
+        script: |
+          RESPONSE=$(curl -s \
+            -X POST "https://api.appetize.io/v1/apps" \
+            -H "Authorization: Token $APPETIZE_API_TOKEN" \
+            -F "file=@build/ios/iphonesimulator/Runner.app.zip" \
+            -F "platform=ios")
+          echo "Appetize response: $RESPONSE"
+          APP_URL=$(echo $RESPONSE | python3 -c "import sys,json; d=json.load(sys.stdin); print('https://appetize.io/app/' + d.get('publicKey',''))" 2>/dev/null || echo "")
+          if [ -n "$APP_URL" ]; then
+            echo ""
+            echo "✅  App disponible sur Appetize :"
+            echo "    $APP_URL"
+          else
+            echo "⚠️  Upload Appetize echoue ou token manquant — verifie APPETIZE_API_TOKEN"
+            echo "    $RESPONSE"
+          fi
+
+    artifacts:
+      - build/ios/iphonesimulator/Runner.app.zip

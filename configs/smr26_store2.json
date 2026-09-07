@@ -1,0 +1,11 @@
+{
+  "APP_NAME": "Congrès Rhumatologie",
+  "APP_PACKAGE": "com.SMR2026",
+  "EVENT_SLUG": "smr26_9v9z4",
+  "EVENT_KEY": "ev_jkfIj6Fu362m0iOK",
+  "BASE_URL": "https://mob-app-ascrea.hashtagsante.com/api/v1",
+  "PRIMARY_COLOR": "6A1B62",
+  "STORE_URL": "https://play.google.com/store/apps/details?id=com.SMR2026",
+  "STORE_URL_ANDROID": "https://play.google.com/store/apps/details?id=com.SMR2026",
+  "STORE_URL_IOS": "https://apps.apple.com/app/id6763072246"
+}

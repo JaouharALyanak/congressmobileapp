@@ -1,0 +1,7 @@
+# ── Copier ce fichier en key.properties (racine android/) et remplir ──
+# !! Ne jamais commiter key.properties dans git !!
+
+storePassword=MOT_DE_PASSE_KEYSTORE
+keyPassword=MOT_DE_PASSE_CLE
+keyAlias=NOM_ALIAS
+storeFile=../keystore/smr26.jks

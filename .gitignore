@@ -1,0 +1,69 @@
+# Private keys — never commit
+kys/
+*.p8
+*.p12
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+envs/
+.env
+*.env
+!envs/template.env
+
+# Keystore & signing secrets — NE JAMAIS COMMITER
+android/key.properties
+keystore/
+*.jks
+*.keystore
+*.p8
+
+# Build outputs
+releases/
+codemagic.yaml.bak
+
+# Configuration locale des outils de dev (chemins propres a chaque poste)
+.claude/
