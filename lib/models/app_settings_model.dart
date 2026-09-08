@@ -100,7 +100,8 @@ class AppSettingsModel {
     required this.contactText,
   });
 
-  factory AppSettingsModel.fromJson(Map<String, dynamic> j) {
+  factory AppSettingsModel.fromJson(Map<String, dynamic>? json) {
+    final j = json ?? const {};
     return AppSettingsModel(
       posterIcon: j['poster_icon'] ?? j['speaker_icon'] ?? 'lucide-file-text',
       posterText: j['poster_text'] ?? 'Posters',

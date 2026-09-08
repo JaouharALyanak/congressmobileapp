@@ -102,8 +102,8 @@ workflows:
       groups:
         - ios_creds
       vars:
-        CONFIG_FILE: configs/smr26.json
-        BUNDLE_ID: com.hashtagsante.smr2026
+        CONFIG_FILE: configs/adn13.json
+        BUNDLE_ID: com.hashtagsante.adn13
         APP_STORE_APPLE_ID: 6763072246
 
     scripts:

@@ -1,0 +1,11 @@
+{
+  "APP_NAME": "ADN13",
+  "APP_PACKAGE": "com.hashtagsante.adn13",
+  "EVENT_SLUG": "13-eme-congres-national-de-ladn_khntp",
+  "EVENT_KEY": "ev_0OpDJfxhCsVKZNvE",
+  "BASE_URL": "https://mob-app-ascrea.hashtagsante.com/api/v1",
+  "PRIMARY_COLOR": "387fbd",
+  "STORE_URL": "https://play.google.com/store/apps/details?id=com.hashtagsante.adn13",
+  "STORE_URL_ANDROID": "https://play.google.com/store/apps/details?id=com.hashtagsante.adn13",
+  "STORE_URL_IOS": "https://apps.apple.com/app/id6763072246"
+}
