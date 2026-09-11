@@ -175,9 +175,14 @@ workflows:
 
       - name: Build IPA
         script: |
+          EXPORT_PLIST="$HOME/export_options.plist"
+          if [ ! -f "$EXPORT_PLIST" ]; then
+            EXPORT_PLIST=$(find /Users/builder -name "export_options.plist" 2>/dev/null | head -n 1)
+          fi
+          echo "Using export options plist: $EXPORT_PLIST"
           flutter build ipa --release \
             --dart-define-from-file=$CONFIG_FILE \
-            --export-options-plist=$CM_EXPORT_OPTIONS_PATH
+            --export-options-plist="$EXPORT_PLIST"
 
     artifacts:
       - build/ios/ipa/*.ipa
