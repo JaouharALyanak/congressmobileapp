@@ -110,9 +110,14 @@ workflows:
       - name: Set up keychain & certificates
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files $BUNDLE_ID \
+          # Generate a fresh EC private key on this machine to avoid
+          # "no private key" errors from existing cloud-managed certificates
+          openssl ecparam -name prime256v1 -genkey -noout -out /tmp/cert_private.key
+          # Fetch or create signing files using our freshly generated key
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
-            --create
+            --create \
+            --certificate-key /tmp/cert_private.key
           keychain add-certificates
 
       - name: Set up code signing settings
