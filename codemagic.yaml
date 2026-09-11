@@ -110,22 +110,25 @@ workflows:
       - name: Set up keychain & certificates
         script: |
           keychain initialize
-          echo "=== Revoking ALL existing distribution certificates ==="
-          for CERT_TYPE in IOS_DISTRIBUTION APPLE_DISTRIBUTION; do
-            echo "--- Checking: $CERT_TYPE ---"
-            app-store-connect certificates list --type "$CERT_TYPE" --json 2>/dev/null \
-              | python3 -c "import sys,json;d=json.load(sys.stdin);certs=d['data'] if isinstance(d,dict) else d;[print(c['id']) for c in certs if isinstance(c,dict) and c.get('id')]" 2>/dev/null \
-              | while IFS= read -r cert_id; do
-                  if [ -n "$cert_id" ]; then
-                    echo "Revoking $CERT_TYPE: $cert_id"
-                    app-store-connect certificates revoke "$cert_id" 2>/dev/null || true
-                  fi
-                done
-          done
-          echo "=== Creating fresh signing files ==="
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --create
+          echo "=== Step 1: Check CERTIFICATE_PRIVATE_KEY ==="
+          if [ -z "$CERTIFICATE_PRIVATE_KEY" ]; then
+            echo "ERROR: CERTIFICATE_PRIVATE_KEY is missing from environment variables!"
+            echo "Please add CERTIFICATE_PRIVATE_KEY to the ios_creds group in Codemagic."
+            exit 1
+          fi
+          echo "=== Step 2: Fetch or create signing files ==="
+          if ! app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create; then
+            echo "Initial fetch/create failed. Cleaning conflicting certificates and retrying..."
+            for CERT_TYPE in IOS_DISTRIBUTION APPLE_DISTRIBUTION; do
+              app-store-connect certificates list --type "$CERT_TYPE" --json 2>/dev/null \
+                | python3 -c "import sys,json;d=json.load(sys.stdin);certs=d.get('data',[]) if isinstance(d,dict) else d;[print(c.get('id','')) for c in certs if isinstance(c,dict)]" 2>/dev/null \
+                | while IFS= read -r cert_id; do
+                    [ -n "$cert_id" ] && echo "Revoking: $cert_id" && app-store-connect certificates revoke "$cert_id" 2>/dev/null || true
+                  done
+            done
+            app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          fi
+          echo "=== Step 3: Add certificates to keychain ==="
           keychain add-certificates
 
       - name: Set up code signing settings

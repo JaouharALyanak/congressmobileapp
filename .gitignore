@@ -2,6 +2,8 @@
 kys/
 *.p8
 *.p12
+*.key
+*private_key*
 
 # Miscellaneous
 *.class
