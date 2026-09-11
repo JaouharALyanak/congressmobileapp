@@ -112,9 +112,9 @@ workflows:
           keychain initialize
           echo "=== Revoking ALL existing distribution certificates ==="
           for CERT_TYPE in IOS_DISTRIBUTION APPLE_DISTRIBUTION; do
-            echo "--- Checking type: $CERT_TYPE ---"
+            echo "--- Checking: $CERT_TYPE ---"
             app-store-connect certificates list --type "$CERT_TYPE" --json 2>/dev/null \
-              | python3 -c "import sys,json;[print(c.get('id','')) for c in json.load(sys.stdin)]" 2>/dev/null \
+              | python3 -c "import sys,json;d=json.load(sys.stdin);certs=d['data'] if isinstance(d,dict) else d;[print(c['id']) for c in certs if isinstance(c,dict) and c.get('id')]" 2>/dev/null \
               | while IFS= read -r cert_id; do
                   if [ -n "$cert_id" ]; then
                     echo "Revoking $CERT_TYPE: $cert_id"
