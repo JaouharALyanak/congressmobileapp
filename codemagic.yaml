@@ -110,13 +110,45 @@ workflows:
       - name: Set up keychain & certificates
         script: |
           keychain initialize
-          echo "=== Step 1: Check CERTIFICATE_PRIVATE_KEY ==="
-          if [ -z "$CERTIFICATE_PRIVATE_KEY" ]; then
-            echo "ERROR: CERTIFICATE_PRIVATE_KEY is missing from environment variables!"
-            echo "Please add CERTIFICATE_PRIVATE_KEY to the ios_creds group in Codemagic."
-            exit 1
+
+          # 1. Sanitize IDs (remove accidental spaces/newlines)
+          export APP_STORE_CONNECT_ISSUER_ID=$(echo "$APP_STORE_CONNECT_ISSUER_ID" | tr -d '[:space:]')
+          export APP_STORE_CONNECT_KEY_IDENTIFIER=$(echo "$APP_STORE_CONNECT_KEY_IDENTIFIER" | tr -d '[:space:]')
+
+          # 2. Sanitize APP_STORE_CONNECT_PRIVATE_KEY (handle literal \n or base64)
+          if [ -n "$APP_STORE_CONNECT_PRIVATE_KEY" ]; then
+            if echo "$APP_STORE_CONNECT_PRIVATE_KEY" | grep -q "\\\\n"; then
+              export APP_STORE_CONNECT_PRIVATE_KEY=$(printf "%b" "$APP_STORE_CONNECT_PRIVATE_KEY")
+            fi
+            if echo "$APP_STORE_CONNECT_PRIVATE_KEY" | grep -qv -- "-----BEGIN"; then
+              DECODED=$(echo "$APP_STORE_CONNECT_PRIVATE_KEY" | base64 -d 2>/dev/null)
+              if echo "$DECODED" | grep -q -- "-----BEGIN"; then
+                export APP_STORE_CONNECT_PRIVATE_KEY="$DECODED"
+              fi
+            fi
           fi
-          echo "=== Step 2: Fetch or create signing files ==="
+
+          # 3. Sanitize CERTIFICATE_PRIVATE_KEY
+          if [ -n "$CERTIFICATE_PRIVATE_KEY" ]; then
+            if echo "$CERTIFICATE_PRIVATE_KEY" | grep -q "\\\\n"; then
+              export CERTIFICATE_PRIVATE_KEY=$(printf "%b" "$CERTIFICATE_PRIVATE_KEY")
+            fi
+            if echo "$CERTIFICATE_PRIVATE_KEY" | grep -qv -- "-----BEGIN"; then
+              DECODED_CERT=$(echo "$CERTIFICATE_PRIVATE_KEY" | base64 -d 2>/dev/null)
+              if echo "$DECODED_CERT" | grep -q -- "-----BEGIN"; then
+                export CERTIFICATE_PRIVATE_KEY="$DECODED_CERT"
+              fi
+            fi
+          fi
+
+          echo "=== Diagnostics ==="
+          echo "Key Identifier: '$APP_STORE_CONNECT_KEY_IDENTIFIER'"
+          echo "Issuer ID length: ${#APP_STORE_CONNECT_ISSUER_ID}"
+          echo "Private Key starts with: $(echo "$APP_STORE_CONNECT_PRIVATE_KEY" | head -n 1)"
+          echo "Private Key lines: $(echo "$APP_STORE_CONNECT_PRIVATE_KEY" | wc -l | tr -d ' ')"
+          echo "Cert Key lines: $(echo "$CERTIFICATE_PRIVATE_KEY" | wc -l | tr -d ' ')"
+
+          echo "=== Step 1: Fetch or create signing files ==="
           if ! app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create; then
             echo "Initial fetch/create failed. Cleaning conflicting certificates and retrying..."
             for CERT_TYPE in IOS_DISTRIBUTION APPLE_DISTRIBUTION; do
@@ -128,7 +160,8 @@ workflows:
             done
             app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
           fi
-          echo "=== Step 3: Add certificates to keychain ==="
+
+          echo "=== Step 2: Add certificates to keychain ==="
           keychain add-certificates
 
       - name: Set up code signing settings
