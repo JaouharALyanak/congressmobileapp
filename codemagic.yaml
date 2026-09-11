@@ -111,22 +111,14 @@ workflows:
         script: |
           keychain initialize
           echo "=== Revoking existing distribution certificates ==="
-          app-store-connect certificates list \
-            --type IOS_DISTRIBUTION \
-            --json 2>/dev/null | \
-            python3 -c "
-import sys, json
-try:
-    for cert in json.load(sys.stdin):
-        print(cert.get('id', ''))
-except Exception as e:
-    print('No certs found or error:', e, file=sys.stderr)
-" | while IFS= read -r cert_id; do
-              if [ -n "$cert_id" ]; then
-                echo "Revoking certificate: $cert_id"
-                app-store-connect certificates revoke "$cert_id" 2>/dev/null || true
-              fi
-            done
+          app-store-connect certificates list --type IOS_DISTRIBUTION --json 2>/dev/null \
+            | python3 -c "import sys,json;[print(c.get('id','')) for c in json.load(sys.stdin)]" 2>/dev/null \
+            | while IFS= read -r cert_id; do
+                if [ -n "$cert_id" ]; then
+                  echo "Revoking: $cert_id"
+                  app-store-connect certificates revoke "$cert_id" 2>/dev/null || true
+                fi
+              done
           echo "=== Creating fresh signing files ==="
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
