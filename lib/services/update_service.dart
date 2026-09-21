@@ -40,8 +40,8 @@ class UpdateService {
       final info = await PackageInfo.fromPlatform();
       final current = info.version;
 
-      if (Platform.isIOS) return _checkiOS(current);
-      if (Platform.isAndroid) return _checkAndroid(current);
+      if (Platform.isIOS) return await _checkiOS(current);
+      if (Platform.isAndroid) return await _checkAndroid(current);
       return null;
     } catch (e) {
       debugPrint('UpdateService: $e');
