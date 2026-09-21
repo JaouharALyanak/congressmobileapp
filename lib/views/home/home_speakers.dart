@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/speaker_provider.dart';
 import '../../providers/theme_provider.dart';
@@ -30,25 +31,52 @@ class _HomeSpeakersState extends State<HomeSpeakers> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Header ──
+        // ── Header (Apple HIG) ──
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 s.speakerText,
                 style: TextStyle(
                   color: t.mainTextPrimaryColor,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.4,
                 ),
               ),
-              TextButton(
-                onPressed: () => widget.onNavigateToSpeakersTab(2),
-                child: Text(
-                  'Voir plus',
-                  style: TextStyle(color: t.mainBtnPrimaryColor),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  widget.onNavigateToSpeakersTab(2);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: t.mainBtnPrimaryColor.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Voir plus',
+                        style: TextStyle(
+                          color: t.mainBtnPrimaryColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 10,
+                        color: t.mainBtnPrimaryColor,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -74,7 +102,7 @@ class _HomeSpeakersState extends State<HomeSpeakers> {
           )
         else
           SizedBox(
-            height: 145,
+            height: 154,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),

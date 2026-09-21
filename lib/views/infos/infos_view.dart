@@ -1,6 +1,8 @@
 import 'package:event_app/views/abstracts/abstracts_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../models/app_theme_model.dart';
 import '../../providers/theme_provider.dart';
 import '../../services/storage_service.dart';
 import '../../widgets/app_icon.dart';
@@ -102,42 +104,23 @@ class _InfosViewState extends State<InfosView> {
 
     return Column(
       children: [
-        // ── Header avec Toggle à DROITE ──────────────────
+        // ── Header avec Apple Segmented Control à DROITE ─────
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.end, // Aligne à droite
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Container(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: t.cardBgColor,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: t.mainTextSecondaryColor.withValues(alpha: 0.1),
-                  ),
+                  color: const Color(0x14767680), // Apple recessed segment background
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    _ToggleBtn(
-                      icon: Icons.grid_view_rounded,
-                      selected: _isGrid,
-                      selectedColor: t.mainBtnPrimaryColor,
-                      onTap: () {
-                        setState(() => _isGrid = true);
-                        StorageService.saveLayoutPreference('infos', true);
-                      },
-                    ),
-                    const SizedBox(width: 4),
-                    _ToggleBtn(
-                      icon: Icons.view_list_rounded,
-                      selected: !_isGrid,
-                      selectedColor: t.mainBtnPrimaryColor,
-                      onTap: () {
-                        setState(() => _isGrid = false);
-                        StorageService.saveLayoutPreference('infos', false);
-                      },
-                    ),
+                    _segmentBtn(Icons.grid_view_rounded, true, t),
+                    _segmentBtn(Icons.view_list_rounded, false, t),
                   ],
                 ),
               ),
@@ -163,20 +146,57 @@ class _InfosViewState extends State<InfosView> {
     );
   }
 
-  // ── VUE GRID (Taille réduite et centrée) ──────────────────
-  Widget _buildGrid(BuildContext context, List<Map<String, dynamic>> items, t) {
+  Widget _segmentBtn(IconData icon, bool value, AppThemeModel t) {
+    final active = _isGrid == value;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        if (!active) {
+          HapticFeedback.selectionClick();
+          setState(() => _isGrid = value);
+          StorageService.saveLayoutPreference('infos', value);
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: active ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: active
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1.5),
+                  ),
+                ]
+              : null,
+        ),
+        child: Icon(
+          icon,
+          size: 17,
+          color: active ? t.mainBtnPrimaryColor : const Color(0xFF8E8E93),
+        ),
+      ),
+    );
+  }
+
+  // ── VUE GRID (Apple Control Center / Widget style) ────────
+  Widget _buildGrid(BuildContext context, List<Map<String, dynamic>> items, AppThemeModel t) {
     return Container(
-      constraints: const BoxConstraints(maxWidth: 400), // Limite la largeur max
+      constraints: const BoxConstraints(maxWidth: 400),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       child: GridView.builder(
         key: const ValueKey('grid'),
-        shrinkWrap: true, // Prend juste la place nécessaire
+        shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
-          childAspectRatio: 1.0, // Carré parfait pour plus de compacité
+          childAspectRatio: 1.0,
         ),
         itemCount: items.length,
         itemBuilder: (context, index) =>
@@ -185,64 +205,85 @@ class _InfosViewState extends State<InfosView> {
     );
   }
 
-  Widget _buildGridCard(BuildContext context, Map<String, dynamic> item, t) {
+  Widget _buildGridCard(BuildContext context, Map<String, dynamic> item, AppThemeModel t) {
     final bool enabled = item['enabled'] as bool;
     final Color accent = t.mainBtnPrimaryColor;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: enabled ? item['action'] : null,
-        borderRadius: BorderRadius.circular(20),
+        onTap: enabled
+            ? () {
+                HapticFeedback.lightImpact();
+                (item['action'] as VoidCallback)();
+              }
+            : null,
+        borderRadius: BorderRadius.circular(26),
         child: Container(
           decoration: BoxDecoration(
             color: enabled
-                ? t.cardBgColor
-                : t.cardBgColor.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(20),
+                ? (isDark ? const Color(0xFF1C1C1E) : Colors.white)
+                : (isDark ? const Color(0xFF1C1C1E).withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.6)),
+            borderRadius: BorderRadius.circular(26),
             border: Border.all(
-              color: enabled
-                  ? accent.withValues(alpha: 0.15)
-                  : Colors.transparent,
-              width: 1,
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.16)
+                  : Colors.white.withValues(alpha: 0.95),
+              width: 1.0,
             ),
-            boxShadow: t.cardShadow,
+            boxShadow: enabled
+                ? [
+                    // Apple-style soft ambient occlusion shadow
+                    BoxShadow(
+                      color: Colors.black.withValues(
+                        alpha: isDark ? 0.28 : 0.06,
+                      ),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
+                      spreadRadius: 0,
+                    ),
+                    // Active accent color ambient glow (like navbar pill)
+                    if (!isDark)
+                      BoxShadow(
+                        color: accent.withValues(alpha: 0.12),
+                        blurRadius: 16,
+                        offset: const Offset(0, 3),
+                        spreadRadius: 0,
+                      ),
+                  ]
+                : [],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
+              AnimatedScale(
+                scale: 1.0,
+                duration: const Duration(milliseconds: 200),
+                child: AppIcon(
+                  iconKey: item['icon'],
+                  size: 34,
                   color: enabled
-                      ? accent.withValues(alpha: 0.08)
-                      : Colors.grey.withValues(alpha: 0.08),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: AppIcon(
-                    iconKey: item['icon'],
-                    size: 22,
-                    color: enabled
-                        ? accent
-                        : t.mainTextSecondaryColor.withValues(alpha: 0.4),
-                  ),
+                      ? accent
+                      : t.mainTextSecondaryColor.withValues(alpha: 0.4),
                 ),
               ),
               const SizedBox(height: 10),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Text(
-                  item['text'],
+                  item['text'] as String,
                   textAlign: TextAlign.center,
                   maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
                     color: enabled
-                        ? t.mainTextPrimaryColor
+                        ? accent
                         : t.mainTextSecondaryColor.withValues(alpha: 0.4),
-                    fontSize: 13,
-                    fontWeight: enabled ? FontWeight.w700 : FontWeight.w500,
+                    letterSpacing: -0.3,
+                    height: 1.2,
                   ),
                 ),
               ),
@@ -253,12 +294,10 @@ class _InfosViewState extends State<InfosView> {
     );
   }
 
-  // ── VUE LIST (Centrée) ───────────────────────────────────
-  Widget _buildList(BuildContext context, List<Map<String, dynamic>> items, t) {
+  // ── VUE LIST (Apple Inset Grouped style) ───────────────────
+  Widget _buildList(BuildContext context, List<Map<String, dynamic>> items, AppThemeModel t) {
     return Container(
-      constraints: const BoxConstraints(
-        maxWidth: 450,
-      ), // Largeur max pour la liste
+      constraints: const BoxConstraints(maxWidth: 450),
       padding: const EdgeInsets.all(24),
       child: ListView.separated(
         key: const ValueKey('list'),
@@ -272,40 +311,60 @@ class _InfosViewState extends State<InfosView> {
     );
   }
 
-  Widget _buildListCard(BuildContext context, Map<String, dynamic> item, t) {
+  Widget _buildListCard(BuildContext context, Map<String, dynamic> item, AppThemeModel t) {
     final bool enabled = item['enabled'] as bool;
+    final Color accent = t.mainBtnPrimaryColor;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: enabled ? item['action'] : null,
-        borderRadius: BorderRadius.circular(16),
+        onTap: enabled
+            ? () {
+                HapticFeedback.lightImpact();
+                (item['action'] as VoidCallback)();
+              }
+            : null,
+        borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: t.cardBgColor,
-            borderRadius: BorderRadius.circular(16),
+            color: enabled
+                ? (isDark ? const Color(0xFF1C1C1E) : Colors.white)
+                : (isDark ? const Color(0xFF1C1C1E).withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.6)),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: t.mainTextSecondaryColor.withValues(alpha: 0.05),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.16)
+                  : Colors.white.withValues(alpha: 0.95),
+              width: 1.0,
             ),
+            boxShadow: enabled
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(
+                        alpha: isDark ? 0.28 : 0.05,
+                      ),
+                      blurRadius: 12,
+                      offset: const Offset(0, 3),
+                    ),
+                    if (!isDark)
+                      BoxShadow(
+                        color: accent.withValues(alpha: 0.10),
+                        blurRadius: 14,
+                        offset: const Offset(0, 2),
+                      ),
+                  ]
+                : [],
           ),
           child: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: enabled
-                      ? t.mainBtnPrimaryColor.withValues(alpha: 0.1)
-                      : Colors.grey.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: AppIcon(
-                  iconKey: item['icon'],
-                  size: 20,
-                  color: enabled
-                      ? t.mainBtnPrimaryColor
-                      : t.mainTextSecondaryColor.withValues(alpha: 0.4),
-                ),
+              AppIcon(
+                iconKey: item['icon'],
+                size: 24,
+                color: enabled
+                    ? accent
+                    : t.mainTextSecondaryColor.withValues(alpha: 0.4),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -313,56 +372,22 @@ class _InfosViewState extends State<InfosView> {
                   item['text'],
                   style: TextStyle(
                     color: enabled
-                        ? t.mainTextPrimaryColor
+                        ? accent
                         : t.mainTextSecondaryColor.withValues(alpha: 0.4),
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ),
               if (enabled)
                 Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 14,
-                  color: t.mainTextSecondaryColor.withValues(alpha: 0.3),
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: accent.withValues(alpha: 0.45),
                 ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── BOUTON TOGGLE ──────────────────────────────────────────
-class _ToggleBtn extends StatelessWidget {
-  final IconData icon;
-  final bool selected;
-  final Color selectedColor;
-  final VoidCallback onTap;
-
-  const _ToggleBtn({
-    required this.icon,
-    required this.selected,
-    required this.selectedColor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: selected ? selectedColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(
-          icon,
-          size: 18,
-          color: selected ? Colors.white : Colors.grey.shade400,
         ),
       ),
     );

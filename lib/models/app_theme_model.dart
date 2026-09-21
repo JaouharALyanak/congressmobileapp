@@ -145,7 +145,7 @@ class AppThemeModel {
     }
   }
 
-  static const Color _purple = Color(0xFF702670);
+  static Color get _defaultPrimary => AppConfig.primaryColor;
 
   factory AppThemeModel.fromJson(Map<String, dynamic> json) {
     final String title = json['title'] ?? '';
@@ -166,6 +166,21 @@ class AppThemeModel {
       return url.startsWith('/') ? '$base$url' : '$base/$url';
     }
 
+    final Color defaultPrimary = _c(j['header_bg'], _defaultPrimary);
+
+    Color resolveThemedColor(dynamic raw, Color fallback) {
+      if (raw == null || raw.toString().isEmpty || raw == 'transparent') {
+        return raw == 'transparent' ? Colors.transparent : fallback;
+      }
+      final parsed = _c(raw.toString(), fallback);
+      final isLegacyPurple = parsed.toARGB32() == 0xFF702670 || parsed.toARGB32() == 0xFF6A1B62;
+      final isAppPurple = AppConfig.primaryColor.toARGB32() == 0xFF702670 || AppConfig.primaryColor.toARGB32() == 0xFF6A1B62;
+      if (isLegacyPurple && !isAppPurple) {
+        return fallback;
+      }
+      return parsed;
+    }
+
     return AppThemeModel(
       eventTitle: title,
       eventSubtitle: subtitle,
@@ -173,7 +188,7 @@ class AppThemeModel {
 
       eventBgColor: _c(j['event_bg_color'], const Color(0xFFF3F4F6)),
       fontFamily: j['font_family'] ?? 'sans-serif',
-      headerBg: _c(j['header_bg'], _purple),
+      headerBg: _c(j['header_bg'], defaultPrimary),
       headerColorTitle: _c(j['header_color_title'], Colors.white),
       headerColorSubtitle: _c(j['header_color_subtitle'], Colors.white),
       //headerLogoUrl: j['header_logo_url'],
@@ -190,7 +205,7 @@ class AppThemeModel {
       eventLogoUrl: fixUrl(j['event_logo_url']),
       eventBgImageUrl: fixUrl(j['event_bg_image_url']),
 
-      bannerBtnColor: _c(j['banner_btn_color'], _purple),
+      bannerBtnColor: resolveThemedColor(j['banner_btn_color'], defaultPrimary),
       bannerBtnTextColor: _c(j['banner_btn_text_color'], Colors.white),
       bannerBtnText: j['banner_btn_text'] ?? 'Découvrir',
       bannerBtnState: j['banner_btn_state'] ?? 'visible',
@@ -210,9 +225,9 @@ class AppThemeModel {
         j['card_description_color'],
         const Color(0xFF6B7280),
       ),
-      cardTimesColor: _c(j['card_times_color'], _purple),
-      cardIconeColor: _c(j['card_icone_color'], _purple),
-      timelineBtnColor: _c(j['timeline_btn_color'], _purple),
+      cardTimesColor: resolveThemedColor(j['card_times_color'], defaultPrimary),
+      cardIconeColor: resolveThemedColor(j['card_icone_color'], defaultPrimary),
+      timelineBtnColor: resolveThemedColor(j['timeline_btn_color'], defaultPrimary),
       timelineBtnInactiveColor: _c(
         j['timeline_btn_inactive_color'],
         Colors.white,
@@ -226,7 +241,7 @@ class AppThemeModel {
       gridPictureStyle: j['grid_picture_style'] ?? 'circle',
       gridRoundedValue: (j['grid_rounded_value'] as num?)?.toInt() ?? 12,
       gridBtnBgColor: _c(j['grid_btn_bg_color'], Colors.white),
-      gridBtnIconeColor: _c(j['grid_btn_icone_color'], _purple),
+      gridBtnIconeColor: resolveThemedColor(j['grid_btn_icone_color'], defaultPrimary),
       mainTextPrimaryColor: _c(
         j['main_text_primary_color'],
         const Color(0xFF1F2937),
@@ -235,7 +250,7 @@ class AppThemeModel {
         j['main_text_secondary_color'],
         const Color(0xFF6B7280),
       ),
-      mainBtnPrimaryColor: _c(j['main_btn_primary_color'], _purple),
+      mainBtnPrimaryColor: resolveThemedColor(j['main_btn_primary_color'], defaultPrimary),
       mainBtnSecondaryColor: _c(
         j['main_btn_secondary_color'],
         const Color(0xFFEF4444),
@@ -243,7 +258,7 @@ class AppThemeModel {
       footerBgColor: _c(j['footer_bg_color'], Colors.white),
       footerIconeBgColor: _c(j['footer_icone_bg_color'], Colors.transparent),
       footerIconeColor: _c(j['footer_icone_color'], const Color(0xFF9E9E9E)),
-      footerActiveBgColor: _c(j['footer_active_bg_color'], _purple),
+      footerActiveBgColor: resolveThemedColor(j['footer_active_bg_color'], defaultPrimary),
       footerActiveIconeColor: _c(j['footer_active_icone_color'], Colors.white),
       //eventLogoUrl: j['event_logo_url'],
       //eventBgImageUrl: j['event_bg_image_url'],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/program_provider.dart';
 import '../../providers/theme_provider.dart';
@@ -42,47 +43,64 @@ class _ProgramViewState extends State<ProgramView> {
             constraints: const BoxConstraints(maxWidth: kMaxContentWidth),
             child: Column(
               children: [
-                // --- SEARCH BAR + ACTIONS ---
+                // --- SEARCH BAR + ACTIONS (Apple HIG) ---
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                   child: Row(
                     children: [
                       Expanded(
                         child: Container(
-                          height: 45,
+                          height: 44,
                           decoration: BoxDecoration(
-                            color: theme.searchBarBg,
-                            borderRadius: BorderRadius.circular(25),
-                            border: Border.all(color: Colors.grey.shade200),
+                            color: theme.cardBgColor,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: Colors.black.withValues(alpha: 0.06),
+                              width: 0.75,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.04),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: TextField(
                             onChanged: (v) => provider.setSearch(v),
-                            style: TextStyle(color: theme.searchBarTextColor),
+                            style: TextStyle(
+                              color: theme.mainTextPrimaryColor,
+                              fontSize: 15,
+                              letterSpacing: -0.2,
+                            ),
                             decoration: InputDecoration(
                               hintText: settings.searchText,
                               hintStyle: TextStyle(
-                                color: theme.searchBarTextColor.withValues(
-                                  alpha: 0.5,
+                                color: theme.mainTextSecondaryColor.withValues(
+                                  alpha: 0.65,
                                 ),
-                                fontSize: 14,
+                                fontSize: 15,
+                                letterSpacing: -0.2,
                               ),
                               prefixIcon: Padding(
-                                padding: const EdgeInsets.all(10),
-                                child: AppIcon(
-                                  iconKey: settings.searchIcon,
+                                padding: const EdgeInsets.all(11),
+                                child: Icon(
+                                  Icons.search_rounded,
                                   size: 20,
-                                  color: theme.headerBg,
+                                  color: theme.mainTextSecondaryColor.withValues(
+                                    alpha: 0.7,
+                                  ),
                                 ),
                               ),
                               border: InputBorder.none,
                               contentPadding: const EdgeInsets.symmetric(
-                                vertical: 10,
+                                vertical: 12,
                               ),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
 
                       // Action 1 : Agenda
                       _buildTopAction(
@@ -100,7 +118,7 @@ class _ProgramViewState extends State<ProgramView> {
                         },
                       ),
 
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
 
                       // Action 2 : Filter
                       _buildTopAction(
@@ -109,6 +127,7 @@ class _ProgramViewState extends State<ProgramView> {
                         provider.hasActiveFilters
                             ? theme.mainBtnSecondaryColor
                             : theme.headerBg,
+                        isActive: provider.hasActiveFilters,
                         onTap: () {
                           showModalBottomSheet(
                             context: context,
@@ -130,6 +149,8 @@ class _ProgramViewState extends State<ProgramView> {
                   selectedIndex: provider.selectedDayIndex,
                   onDaySelected: (i) => provider.selectDay(i),
                 ),
+
+                const SizedBox(height: 6),
 
                 Expanded(
                   child: provider.isLoading
@@ -216,24 +237,35 @@ class _ProgramViewState extends State<ProgramView> {
     String iconKey,
     Color color, {
     VoidCallback? onTap,
+    bool isActive = false,
   }) {
     return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AppIcon(iconKey: iconKey, size: 20, color: color),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 8,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap?.call();
+      },
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: isActive
+              ? color.withValues(alpha: 0.16)
+              : const Color(0x12767680),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isActive
+                ? color.withValues(alpha: 0.35)
+                : Colors.black.withValues(alpha: 0.05),
+            width: 0.75,
           ),
-        ],
+        ),
+        child: Center(
+          child: AppIcon(
+            iconKey: iconKey,
+            size: 19,
+            color: isActive ? color : const Color(0xFF636366),
+          ),
+        ),
       ),
     );
   }

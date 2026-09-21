@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../models/app_theme_model.dart';
 import '../../models/app_settings_model.dart';
 import '../../widgets/app_icon.dart';
@@ -19,7 +20,8 @@ class HomeShortcuts extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           _buildItem(1, settings.programIcon, settings.programText),
@@ -33,29 +35,54 @@ class HomeShortcuts extends StatelessWidget {
 
   Widget _buildItem(int index, String iconKey, String label) {
     return GestureDetector(
-      onTap: () => onNavigate(index), // Déclenche le changement d'onglet
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onNavigate(index);
+      },
       child: Container(
-        margin: const EdgeInsets.only(right: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        margin: const EdgeInsets.only(right: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: theme.cardBgColor, // Fond blanc/clair du bouton
-          borderRadius: BorderRadius.circular(30), // Forme capsule
-          boxShadow: theme.cardShadow,
+          color: theme.cardBgColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Colors.black.withValues(alpha: 0.06),
+            width: 0.75,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            AppIcon(
-              iconKey: iconKey,
-              size: 18,
-              color: theme.cardIconeColor, // Couleur de l'icône
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: theme.mainBtnPrimaryColor.withValues(alpha: 0.10),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: AppIcon(
+                  iconKey: iconKey,
+                  size: 15,
+                  color: theme.mainBtnPrimaryColor,
+                ),
+              ),
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                color: theme.cardTitleColor, // Couleur du texte
-                fontSize: 14,
+                color: theme.cardTitleColor,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
+                letterSpacing: -0.2,
               ),
             ),
           ],

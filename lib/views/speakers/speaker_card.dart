@@ -30,12 +30,23 @@ class SpeakerCard extends StatelessWidget {
         );
       },
 
-      /// 🔥 GRID DESIGN
+      /// 🔥 GRID DESIGN (Apple Continuous Squircle)
       child: isGrid
           ? Container(
               decoration: BoxDecoration(
                 color: t.cardBgColor,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  width: 0.75,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
               child: Column(
@@ -51,7 +62,11 @@ class SpeakerCard extends StatelessWidget {
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: rFs(context, 14)),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: rFs(context, 14),
+                      letterSpacing: -0.2,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   if (speaker.title.isNotEmpty)
@@ -62,27 +77,38 @@ class SpeakerCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: rFs(context, 11),
-                        color: t.mainTextSecondaryColor,
+                        color: t.mainTextSecondaryColor.withValues(alpha: 0.8),
                       ),
                     ),
                 ],
               ),
             )
-          /// 🔥 LIST DESIGN
+          /// 🔥 LIST DESIGN (Apple Inset Card)
           : Container(
-              margin: const EdgeInsets.only(bottom: 14),
-              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: t.cardBgColor,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  width: 0.75,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
                   Hero(
                     tag: 'speaker-list-${speaker.id}',
-                    child: _avatar(t, rS(context, 50)),
+                    child: _avatar(t, rS(context, 48)),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,22 +120,30 @@ class SpeakerCard extends StatelessWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: rFs(context, 14),
+                            letterSpacing: -0.2,
                           ),
                         ),
                         if (speaker.title.isNotEmpty)
-                          Text(
-                            speaker.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: rFs(context, 12),
-                              color: t.mainTextSecondaryColor,
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              speaker.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: rFs(context, 12),
+                                color: t.mainTextSecondaryColor.withValues(alpha: 0.8),
+                              ),
                             ),
                           ),
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 20,
+                    color: t.mainTextSecondaryColor.withValues(alpha: 0.35),
+                  ),
                 ],
               ),
             ),

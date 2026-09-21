@@ -50,7 +50,7 @@ class ProgramDay {
       items: (j['items'] as List).map((i) => ProgramItem.fromJson(i)).toList(),
       btnColor: ColorParser.parse(
         j['timeline_btn_color'],
-        fallback: const Color(0xFF702670),
+        fallback: AppConfig.primaryColor,
       ),
       btnInactiveColor: ColorParser.parse(
         j['timeline_btn_inactive_color'],
