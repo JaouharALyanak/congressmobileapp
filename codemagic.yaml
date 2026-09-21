@@ -93,7 +93,7 @@ workflows:
 
   # ── iOS — App Store ────────────────────────────────────────────────────────
   ios-release:
-    name: iOS Release (IPA) v1.0.1+6
+    name: iOS Release (IPA) v1.0.1+7
     max_build_duration: 60
     environment:
       flutter: stable
