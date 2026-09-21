@@ -223,21 +223,30 @@ class _ProgramItemCardState extends State<ProgramItemCard>
             const SizedBox(width: 12),
             Expanded(
               child: Container(
-                margin: const EdgeInsets.only(bottom: 20),
+                margin: const EdgeInsets.only(bottom: 18),
                 decoration: BoxDecoration(
                   color: resolvedBg,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                   border: style.cardBorderSize > 0
                       ? Border.all(
                           color: resolvedBorder,
                           width: style.cardBorderSize.toDouble(),
                         )
-                      : null,
-                  boxShadow: widget.theme.cardShadow,
+                      : Border.all(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          width: 0.75,
+                        ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 12,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: InkWell(
                   onTap: () => _handleTap(context),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(

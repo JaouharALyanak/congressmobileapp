@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import '../config/app_config.dart';
 
 /// Ouvre une WebView dans un bottom sheet plein écran.
 /// Utilisation :
@@ -21,8 +22,9 @@ class WebViewSheet extends StatefulWidget {
     BuildContext context, {
     required String url,
     required String title,
-    Color accentColor = const Color(0xFF702670),
+    Color? accentColor,
   }) {
+    final effectiveAccent = accentColor ?? AppConfig.primaryColor;
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -31,7 +33,7 @@ class WebViewSheet extends StatefulWidget {
       builder: (_) => WebViewSheet(
         url: url,
         title: title,
-        accentColor: accentColor,
+        accentColor: effectiveAccent,
       ),
     );
   }

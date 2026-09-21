@@ -34,14 +34,23 @@ class SponsorCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: t.cardBgColor,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           border: t.cardBorderSize > 0
               ? Border.all(
                   color: t.cardBorderColor,
                   width: t.cardBorderSize.toDouble(),
                 )
-              : null,
-          boxShadow: t.cardShadow,
+              : Border.all(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  width: 0.75,
+                ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: displayMode == 'list'
             ? _buildListLayout(context, t)
