@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/app_config.dart';
 
 /// Affiche un bottom sheet permettant à l'utilisateur de choisir
 /// le délai de notification avant une session.
@@ -12,12 +13,13 @@ import 'package:flutter/material.dart';
 /// ```
 Future<int?> showNotificationDelayPicker(
   BuildContext context, {
-  Color accentColor = const Color(0xFF6A1B62),
+  Color? accentColor,
 }) {
+  final effectiveAccent = accentColor ?? AppConfig.primaryColor;
   return showModalBottomSheet<int>(
     context: context,
     backgroundColor: Colors.transparent,
-    builder: (_) => _NotificationDelaySheet(accentColor: accentColor),
+    builder: (_) => _NotificationDelaySheet(accentColor: effectiveAccent),
   );
 }
 

@@ -34,14 +34,27 @@ class SpeakerHomeCard extends StatelessWidget {
       child: Container(
         width: rS(context, 110),
         height: rS(context, 145),
-        margin: const EdgeInsets.only(right: 10),
+        margin: const EdgeInsets.only(right: 10, bottom: 4),
         padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
         decoration: BoxDecoration(
           color: theme.cardBgColor,
-          borderRadius: BorderRadius.circular(
-            theme.gridRoundedValue.toDouble(),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.90),
+            width: 1.0,
           ),
-          boxShadow: theme.cardShadow,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+            BoxShadow(
+              color: theme.mainBtnPrimaryColor.withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.max,

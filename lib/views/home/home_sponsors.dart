@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/sponsor_provider.dart';
@@ -78,25 +79,52 @@ class _HomeSponsorsState extends State<HomeSponsors> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header
+        // ── Header (Apple HIG) ──
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 'Sponsors',
                 style: TextStyle(
                   color: t.mainTextPrimaryColor,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.4,
                 ),
               ),
-              TextButton(
-                onPressed: () => widget.onNavigateToSponsorsTab(3),
-                child: Text(
-                  'Voir plus',
-                  style: TextStyle(color: t.mainBtnPrimaryColor),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  widget.onNavigateToSponsorsTab(3);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: t.mainBtnPrimaryColor.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Voir plus',
+                        style: TextStyle(
+                          color: t.mainBtnPrimaryColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 10,
+                        color: t.mainBtnPrimaryColor,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -119,8 +147,18 @@ class _HomeSponsorsState extends State<HomeSponsors> {
                 margin: const EdgeInsets.only(right: 10),
                 decoration: BoxDecoration(
                   color: t.cardBgColor,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: t.cardShadow,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    width: 0.75,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 padding: const EdgeInsets.all(10),
                 child: sponsor.image != null && sponsor.image!.isNotEmpty

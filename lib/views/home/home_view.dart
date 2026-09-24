@@ -62,9 +62,9 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Search bar ──────────────────────────────────────────
+            // ── Search bar (Apple SearchField capsule) ─────────────
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: GestureDetector(
                 onTap: () => Navigator.push(
                   context,
@@ -73,23 +73,40 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                   ),
                 ),
                 child: Container(
-                  height: 46,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: t.cardBgColor,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: t.cardShadow,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      width: 0.75,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Row(
                     children: [
                       const SizedBox(width: 14),
-                      Icon(Icons.search, color: t.mainTextSecondaryColor, size: 20),
+                      Icon(
+                        Icons.search_rounded,
+                        color: t.mainTextSecondaryColor.withValues(alpha: 0.7),
+                        size: 20,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           '${s.searchText}...',
                           style: TextStyle(
-                            color: t.mainTextSecondaryColor,
-                            fontSize: 14,
+                            color: t.mainTextSecondaryColor.withValues(
+                              alpha: 0.65,
+                            ),
+                            fontSize: 15,
+                            letterSpacing: -0.2,
                           ),
                         ),
                       ),

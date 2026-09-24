@@ -50,10 +50,11 @@ class AppConfig {
     defaultValue: '6A1B62',
   );
 
-  // ✅ Couleur dynamique depuis le .env
+  // ✅ Couleur dynamique depuis les configs
   static Color get primaryColor {
     try {
-      return Color(int.parse('0xFF$_primaryHex'));
+      final hex = _primaryHex.replaceFirst('#', '').trim();
+      return Color(int.parse('0xFF$hex'));
     } catch (_) {
       return const Color(0xFF6A1B62);
     }
