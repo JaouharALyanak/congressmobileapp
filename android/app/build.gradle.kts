@@ -38,7 +38,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.hashtagsante.eventapp"
     compileSdk = flutter.compileSdkVersion
-    // ndkVersion = flutter.ndkVersion  // commenté : évite le crash de sdkmanager avec Java 25
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
